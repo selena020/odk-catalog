@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1><i class="fas fa-microchip"></i> Каталог двигателей АО «ОДК»</h1>
+
+<!-- СТРОКА ПОИСКА -->
+<div class="search-bar">
+    <form method="get" action="{{ url_for('catalog.list_products') }}" class="search-form">
+        <div class="search-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" name="search" value="{{ search_query or '' }}" 
+                   placeholder="Поиск двигателя по названию..." 
+                   class="search-input">
+            <button type="submit" class="search-btn">Найти</button>
+            {% if search_query %}
+                <a href="{{ url_for('catalog.list_products', category=active_category) }}" 
+                   class="search-clear">✕ Очистить</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- ПАНЕЛЬ ФИЛЬТРОВ -->
+<div class="filter-bar">
+    <span class="filter-label"><i class="fas fa-filter"></i> Фильтр по типу:</span>
+    <div class="filter-buttons">
+        <a href="{{ url_for('catalog.list_products', search=search_query) }}" 
+           class="filter-btn {% if not active_category %}active{% endif %}">
+            <i class="fas fa-th-large"></i> Все двигатели
+        </a>
+        {% for cat in categories %}
+        <a href="{{ url_for('catalog.list_products', category=cat.id, search=search_query) }}" 
+           class="filter-btn {% if active_category == cat.id %}active{% endif %}">
+            <i class="fas fa-tags"></i> {{ cat.name }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- СООБЩЕНИЕ О РЕЗУЛЬТАТАХ ПОИСКА -->
+{% if search_query %}
+    <div class="search-info">
+        <i class="fas fa-search"></i> Результаты поиска по запросу «{{ search_query }}»: найдено {{ products|length }} двигателей
+    </div>
+{% endif %}
+
+<!-- КОНТЕЙНЕР С КАРТОЧКАМИ -->
+<div class="row">
+    {% for product in products %}
+    <div class="card">
+        {% if product.image_url %}
+            <img src="{{ product.image_url }}" alt="{{ product.name }}" 
+                 style="width: 100%; height: 160px; object-fit: cover; border-radius: 12px; margin-bottom: 12px;">
+        {% else %}
+            <div style="width: 100%; height: 160px; background: linear-gradient(135deg, #0a2b4e, #1e6f9f); border-radius: 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-microchip" style="color: white; font-size: 48px;"></i>
+            </div>
+        {% endif %}
+        <h3>{{ product.name }}</h3>
+        <p>{{ product.get_spec() }}</p>
+        <p><strong>Применение:</strong> {{ product.application }}</p>
+        <a href="{{ url_for('catalog.product_detail', id=product.id) }}" class="card-link">Подробнее →</a>
+    </div>
+    {% else %}
+    <div class="no-results">
+        <i class="fas fa-search" style="font-size: 48px; color: #aaa;"></i>
+        <p>По вашему запросу «{{ search_query }}» ничего не найдено</p>
+        <a href="{{ url_for('catalog.list_products') }}" class="btn">Сбросить поиск</a>
+    </div>
+    {% endfor %}
+</div>
+<!-- ПАГИНАЦИЯ (постраничная навигация) -->
+{% if pagination.pages > 1 %}
+<div class="pagination">
+    {% if pagination.has_prev %}
+        <a href="{{ url_for('catalog.list_products', page=pagination.prev_num, category=active_category, search=search_query) }}" class="page-btn prev">← Назад</a>
+    {% else %}
+        <span class="page-btn disabled">← Назад</span>
+    {% endif %}
+    
+    {% for num in pagination.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+        {% if num %}
+            {% if num == pagination.page %}
+                <span class="page-btn active">{{ num }}</span>
+            {% else %}
+                <a href="{{ url_for('catalog.list_products', page=num, category=active_category, search=search_query) }}" class="page-btn">{{ num }}</a>
+            {% endif %}
+        {% else %}
+            <span class="page-btn dots">...</span>
+        {% endif %}
+    {% endfor %}
+    
+    {% if pagination.has_next %}
+        <a href="{{ url_for('catalog.list_products', page=pagination.next_num, category=active_category, search=search_query) }}" class="page-btn next">Вперёд →</a>
+    {% else %}
+        <span class="page-btn disabled">Вперёд →</span>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

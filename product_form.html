@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{% if product %}Редактировать{% else %}Добавить{% endif %} двигатель</h2>
+
+<form method="post" enctype="multipart/form-data">
+    <label>Название двигателя</label>
+    <input type="text" name="name" value="{{ product.name if product else '' }}" required>
+
+    <label>Категория</label>
+    <select name="category_id" required>
+        {% for cat in categories %}
+        <option value="{{ cat.id }}" {% if product and product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Тяга (кгс) — для реактивных двигателей</label>
+    <input type="number" name="thrust_kgf" value="{{ product.thrust_kgf if product and product.thrust_kgf else '' }}">
+
+    <label>Мощность (л.с.) — для винтовых и вертолётных</label>
+    <input type="number" name="power_hp" value="{{ product.power_hp if product and product.power_hp else '' }}">
+
+    <label>Применение (для каких самолётов/вертолётов)</label>
+    <input type="text" name="application" value="{{ product.application if product else '' }}">
+
+    <label>Описание</label>
+    <textarea name="description" rows="4">{{ product.description if product else '' }}</textarea>
+
+    <label>Фото двигателя</label>
+    <input type="file" name="photo" accept="image/jpeg,image/png,image/jpg">
+    {% if product and product.image_url %}
+        <p>Текущее фото: <img src="{{ product.image_url }}" width="80" style="border-radius: 8px;"></p>
+    {% endif %}
+
+    <button type="submit">Сохранить</button>
+</form>
+{% endblock %}
